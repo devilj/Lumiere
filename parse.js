@@ -32,9 +32,9 @@ var post_data = JSON.stringify({
 
 var data='';
 
-var intervalID = setInterval(myCallback, 30000);
+//var intervalID = setInterval(myCallback, 30000);
 
-function myCallback() {
+
     // Set up the request
     var post_req = http.request(post_options, function(res) {
 
@@ -43,7 +43,7 @@ function myCallback() {
         res.setEncoding('utf8');
 
         res.on('data', function (chunk) {
-            console.log(chunk);
+            //console.log(chunk);
             data += chunk;
         });
 
@@ -72,13 +72,13 @@ function myCallback() {
     post_req.write(post_data);
     post_req.end();
 
-}
+
 
 
 
 
 function parseHtmlResponse(response) {
-    console.log("called AAA")
+    //console.log("called AAA")
     var $ = cheerio.load(response);
 
     var result=[];
@@ -111,6 +111,14 @@ function parseHtmlResponse(response) {
                 break;
             case 5:
                 train.status=$(this).text();
+                train.minutesLeft = getMinutesLeftFromStatus($(this).text());
+
+                if (train.minutesLeft && train.minutesLeft <= 5 ) {
+                    train.class = 'go-line';
+
+                } else if(train.minutesLeft && train.minutesLeft <=20 ) {
+                    train.class = 'ready-line';
+                }
                 result.push(_.clone(train));
         }
 
@@ -120,4 +128,16 @@ function parseHtmlResponse(response) {
     console.log(result);
 
     return result;
+}
+
+function getMinutesLeftFromStatus(statusParam) {
+    var status = statusParam.toLowerCase().trim();
+
+    if (status.length == 0) {
+        return null;
+    } else {
+        return parseInt(status.substring(3,status.indexOf("min")).trim());
+    }
+
+
 }
