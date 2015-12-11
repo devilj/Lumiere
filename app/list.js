@@ -26,24 +26,22 @@ var List = React.createClass({
     render: function () {
         var items = this.state.data.map(function (item) {
             return tr( {className:item.class},
-                    td(item.time),
-                    td(item.to),
-                    td(item.track),
-                    td(item.line),
-                    td(item.train),
-                    td(item.status) )
+                    td(null, item.time),
+                    td(null, item.to),
+                    td(null, item.track),
+                    td(null, item.line),
+                    td(null, item.train),
+                    td(null, item.status) )
         });
 
         return table({className:'table schedule'},
                 thead(
-                    tr(
-                        th('Departs'),
-                        th('To'),
-                        th('Track'),
-                        th('Line'),
-                        th('Train'),
-                        th('Status')
-                    )
+                    td(null, 'Departs'),
+                    th(null, 'To'),
+                    th(null, 'Track'),
+                    th(null, 'Line'),
+                    th(null, 'Train'),
+                    th(null, 'Status')
                 ),
                 items
             );
