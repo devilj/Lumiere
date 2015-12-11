@@ -4,7 +4,7 @@ var http = require('http'),
     React = require('react'),
     ReactDOMServer = require('react-dom/server'),
     DOM = React.DOM, body = DOM.body, div = DOM.div, script = DOM.script,
-    // This is our React component, shared by server and browser thanks to browserify
+// This is our React component, shared by server and browser thanks to browserify
     App = React.createFactory(require('./App'))
 
 
@@ -40,35 +40,35 @@ http.createServer(function(req, res) {
     // language (or just a string) for the outer page template
     var html = ReactDOMServer.renderToStaticMarkup(body(null,
 
-      // The actual server-side rendering of our component occurs here, and we
-      // pass our data in as `props`. This div is the same one that the client
-      // will "render" into on the browser from browser.js
-      div({id: 'content', dangerouslySetInnerHTML: {__html:
-        ReactDOMServer.renderToString(App(props))
-      }}),
+        // The actual server-side rendering of our component occurs here, and we
+        // pass our data in as `props`. This div is the same one that the client
+        // will "render" into on the browser from browser.js
+        div({id: 'content', dangerouslySetInnerHTML: {__html:
+            ReactDOMServer.renderToString(App(props))
+        }}),
 
-      // The props should match on the client and server, so we stringify them
-      // on the page to be available for access by the code run in browser.js
-      // You could use any var name here as long as it's unique
-      script({dangerouslySetInnerHTML: {__html:
+        // The props should match on the client and server, so we stringify them
+        // on the page to be available for access by the code run in browser.js
+        // You could use any var name here as long as it's unique
+        script({dangerouslySetInnerHTML: {__html:
         'var APP_PROPS = ' + safeStringify(props) + ';'
-      }}),
+        }}),
 
-      // We'll load React from a CDN - you don't have to do this,
-      // you can bundle it up or serve it locally if you like
-      script({src: '//fb.me/react-0.14.3.min.js'}),
-      script({src: '//fb.me/react-dom-0.14.3.min.js'}),
+        // We'll load React from a CDN - you don't have to do this,
+        // you can bundle it up or serve it locally if you like
+        script({src: '//fb.me/react-0.14.3.min.js'}),
+        script({src: '//fb.me/react-dom-0.14.3.min.js'}),
 
-      // Then the browser will fetch and run the browserified bundle consisting
-      // of browser.js and all its dependencies.
-      // We serve this from the endpoint a few lines down.
-      script({src: '/bundle.js'})
+        // Then the browser will fetch and run the browserified bundle consisting
+        // of browser.js and all its dependencies.
+        // We serve this from the endpoint a few lines down.
+        script({src: '/bundle.js'})
     ))
 
     // Return the page to the browser
     res.end(html)
 
-  // This endpoint is hit when the browser is requesting bundle.js from the page above
+    // This endpoint is hit when the browser is requesting bundle.js from the page above
   } else if (req.url == '/bundle.js') {
 
     res.setHeader('Content-Type', 'text/javascript')
@@ -81,15 +81,15 @@ http.createServer(function(req, res) {
     // so that it uses the global variable (from the CDN JS file) instead of
     // bundling it up with everything else
     browserify()
-      .add('./browser.js')
-      .transform(literalify.configure({
-        'react': 'window.React',
-        'react-dom': 'window.ReactDOM',
-      }))
-      .bundle()
-      .pipe(res)
+        .add('./browser.js')
+        .transform(literalify.configure({
+          'react': 'window.React',
+          'react-dom': 'window.ReactDOM',
+        }))
+        .bundle()
+        .pipe(res)
 
-  // Return 404 for all other requests
+    // Return 404 for all other requests
   } else {
     res.statusCode = 404
     res.end()

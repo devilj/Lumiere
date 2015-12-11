@@ -1,6 +1,6 @@
 var React = require('react'),
     ReactDOM = require('react-dom'),
-    // This is our React component, shared by server and browser thanks to browserify
+// This is our React component, shared by server and browser thanks to browserify
     App = React.createFactory(require('./App'))
 
 // This script will run in the browser and will render our component using the
