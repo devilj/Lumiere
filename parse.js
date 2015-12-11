@@ -1,7 +1,5 @@
 
-var jsdom = require("jsdom");
 var http = require('http');
-var htmlparser = require("htmlparser");
 var cheerio = require("cheerio");
 
 //
@@ -62,31 +60,8 @@ post_req.end();
 
 
 function parseHtmlResponse(response) {
-
-
-    //jsdom.env(
-    //    response,
-    //    ["http://code.jquery.com/jquery.js"],
-    //    function (err, window) {
-    //        console.log(err);
-    //        var $ = window.$;
-    //
-    //        console.log("there have been", $("td").length, "io.js releases!");
-    //    }
-    //);
-
-    //var handler = new htmlparser.DefaultHandler(function (error, dom) {
-    //    if (error)
-    //        console.log("Error");
-    //    else
-    //        console.log("No error");
-    //});
-    //var parser = new htmlparser.Parser(handler);
-    //parser.parseComplete(response);
-    //console.log(handler.dom, false, null);
-
     var $ = cheerio.load(response);
-    var list = $("td");
-
-    console.log(list.html());
+    $('p').each(function() {
+        console.log($(this).text());
+    });
 }
