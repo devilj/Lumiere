@@ -5,7 +5,7 @@ var http = require('http'),
     ReactDOMServer = require('react-dom/server'),
     DOM = React.DOM, body = DOM.body, div = DOM.div, script = DOM.script,
 // This is our React component, shared by server and browser thanks to browserify
-    App = React.createFactory(require('./App'))
+    App = React.createFactory(require('./app'))
 
 
 // Just create a plain old HTTP server that responds to two endpoints ('/' and
