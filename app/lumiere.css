@@ -1,0 +1,34 @@
+h1 {
+    margin: 20px 0 40px;
+}
+.row {
+    margin-bottom: 20px;
+}
+.row .row {
+    margin-top: 10px;
+    margin-bottom: 0;
+}
+
+table.schedule tr.go-line {
+    background-color: rgba(255, 0, 0, 0.67);
+    font-size: larger;
+    font-weight: bolder;
+}
+
+table.schedule tr.ready-line {
+    background-color: rgba(255, 109, 2, 0.67);
+}
+
+table.schedule {
+    font-size: xx-large;
+    background-color: rgba(43, 105, 128, 0.59);
+}
+
+body {
+    background-color: rgba(43, 105, 128, 0.59);
+    color: white !important;
+}
+
+
+
+
