@@ -1,192 +1,108 @@
 'use strict';
-
+var $ = require('jquery');
+var _ = require('lodash');
 var React = require('react'),
-    DOM = React.DOM, td = DOM.td, tr = DOM.tr, th = DOM.th, thead = DOM.thead, table = DOM.table;
+    DOM = React.DOM, td = DOM.td, tr = DOM.tr, th = DOM.th, thead = DOM.thead, table = DOM.table, tbody = React.DOM.tbody;
 
-var parse = require('../parse');
+var processedTrains = [];
+
+var minutesLeftWhenBellShouldBeRung = 2;
+//how often to query for new data. (in milliseconds)
+var frequencyDataRefresh = 30000;
 
 var List = React.createClass({
-    update: function () {
-
-    },
-
-    getInitialState: function() {
-        console.log('hi mom!');
-
-        parse(function (data) {
-            this.setState({data:data})
+    loadSchedulesFromServer: function () {
+        $.ajax({
+            url: "/getdata",
+            dataType: 'json',
+            success: function (data) {
+                this.setState({data: data});
+            }.bind(this)
         });
-
-        return {data:
-            [ { time: ' 4:19  ',
-                to: 'Newark Penn',
-                track: '1',
-                line: 'Raritan Valley',
-                train: '5742',
-                status: 'in 2 Min',
-                minutesLeft: 2,
-                class: 'go-line' },
-                { time: ' 4:19  ',
-                to: 'Newark Penn',
-                track: '1',
-                line: 'Raritan Valley',
-                train: '5742',
-                status: 'in 21 Min',
-                minutesLeft: 21,
-                class: 'ready-line' },
-                { time: ' 4:20  ',
-                    to: 'Raritan',
-                    track: '1',
-                    line: 'Raritan Valley',
-                    train: '5431',
-                    status: ' ',
-                    minutesLeft: null },
-                { time: ' 4:54  ',
-                    to: 'High Bridge',
-                    track: '1',
-                    line: 'Raritan Valley',
-                    train: '5733',
-                    status: ' ',
-                    minutesLeft: null },
-                { time: ' 4:57  ',
-                    to: 'Newark Penn',
-                    track: '2',
-                    line: 'Raritan Valley',
-                    train: '5444',
-                    status: ' ',
-                    minutesLeft: null },
-                { time: ' 5:26  ',
-                    to: 'Raritan',
-                    track: '1',
-                    line: 'Raritan Valley',
-                    train: '5435',
-                    status: ' ',
-                    minutesLeft: null },
-                { time: ' 5:54  ',
-                    to: 'Raritan',
-                    track: '1',
-                    line: 'Raritan Valley',
-                    train: '5439',
-                    status: ' ',
-                    minutesLeft: null },
-                { time: ' 6:10  ',
-                    to: 'Newark Penn',
-                    track: '1',
-                    line: 'Raritan Valley',
-                    train: '5746',
-                    status: ' ',
-                    minutesLeft: null },
-                { time: ' 6:14  ',
-                    to: 'Raritan',
-                    track: '1',
-                    line: 'Raritan Valley',
-                    train: '5441',
-                    status: ' ',
-                    minutesLeft: null },
-                { time: ' 6:37  ',
-                    to: 'Newark Penn',
-                    track: '2',
-                    line: 'Raritan Valley',
-                    train: '5448',
-                    status: ' ',
-                    minutesLeft: null },
-                { time: ' 6:42  ',
-                    to: 'Raritan',
-                    track: '1',
-                    line: 'Raritan Valley',
-                    train: '5445',
-                    status: ' ',
-                    minutesLeft: null },
-                { time: ' 7:09  ',
-                    to: 'Raritan',
-                    track: '1',
-                    line: 'Raritan Valley',
-                    train: '5447',
-                    status: ' ',
-                    minutesLeft: null },
-                { time: ' 7:25  ',
-                    to: 'NY Penn -SEC',
-                    track: '1',
-                    line: 'Raritan Valley',
-                    train: '5150',
-                    status: ' ',
-                    minutesLeft: null },
-                { time: ' 7:44  ',
-                    to: 'High Bridge',
-                    track: '1',
-                    line: 'Raritan Valley',
-                    train: '5749',
-                    status: ' ',
-                    minutesLeft: null },
-                { time: ' 8:21  ',
-                    to: 'Raritan',
-                    track: '1',
-                    line: 'Raritan Valley',
-                    train: '5451',
-                    status: ' ',
-                    minutesLeft: null },
-                { time: ' 8:38  ',
-                    to: 'NY Penn -SEC',
-                    track: '1',
-                    line: 'Raritan Valley',
-                    train: '5152',
-                    status: ' ',
-                    minutesLeft: null },
-                { time: ' 9:17  ',
-                    to: 'High Bridge',
-                    track: '1',
-                    line: 'Raritan Valley',
-                    train: '5193',
-                    status: ' ',
-                    minutesLeft: null },
-                { time: ' 9:35  ',
-                    to: 'NY Penn -SEC',
-                    track: '1',
-                    line: 'Raritan Valley',
-                    train: '5154',
-                    status: ' ',
-                    minutesLeft: null },
-                { time: ' 10:17  ',
-                    to: 'Raritan',
-                    track: '1',
-                    line: 'Raritan Valley',
-                    train: '5155',
-                    status: ' ',
-                    minutesLeft: null },
-                { time: ' 10:39  ',
-                    to: 'NY Penn -SEC',
-                    track: '1',
-                    line: 'Raritan Valley',
-                    train: '5156',
-                    status: ' ',
-                    minutesLeft: null } ]
-
-        };
+    },
+    getInitialState: function () {
+        return {data: []};
     },
     render: function () {
+
         var items = this.state.data.map(function (item) {
-            return tr( {className:item.class},
-                    td(null, item.time),
-                    td(null, item.to),
-                    td(null, item.track),
-                    td(null, item.line),
-                    td(null, item.train),
-                    td(null, item.status) )
+            return tr({key:"row" + item.train,className: item.class},
+                    td({key: item.time}, item.time),
+                    td({key: item.to}, item.to),
+                    td({key: item.track}, item.track),
+                    td({key: item.line}, item.line),
+                    td({key: item.train}, item.train),
+                    td({key: item.status}, item.status))
+                    });
+
+        return table(
+            {className: 'table schedule'},
+            thead({key:"head"},
+                tr(null, th({key: "depart"}, 'Depart'),
+                    th({key: "to"}, 'To'),
+                    th({key: "track"}, 'Track'),
+                    th({key: "line"},  'Line'),
+                    th({key: "train"}, 'Train'),
+                    th({key: "status"}, 'Status')
+                )
+            ),
+            tbody({key:"items"}, items)
+        );
+
+    },
+    componentDidMount: function () {
+
+        this.loadSchedulesFromServer();
+        setInterval(this.loadSchedulesFromServer, frequencyDataRefresh);
+
+    },
+    componentDidUpdate: function (prevProps, prevState) {
+
+        var data = this.state.data;
+        var currentTrainsIDs = [];
+
+        var newTrainsArriving = false;
+
+        //identify all trains for which we should ring bell
+        data.forEach( function(trainItem) {
+
+            if (trainItem.minutesLeft != null && trainItem.minutesLeft <= minutesLeftWhenBellShouldBeRung
+                && trainItem.minutesLeft > 0
+                && $.inArray(trainItem.train, processedTrains) == -1) {
+
+                if (!newTrainsArriving) {
+                    newTrainsArriving = true;
+                }
+
+                processedTrains.push(trainItem.train);
+            }
+
+            //store ids of the trains
+            currentTrainsIDs.push(trainItem.train);
         });
 
-        return table({className:'table schedule'},
-                thead(
-                    td(null, 'Departs'),
-                    th(null, 'To'),
-                    th(null, 'Track'),
-                    th(null, 'Line'),
-                    th(null, 'Train'),
-                    th(null, 'Status')
-                ),
-                items
-            );
+        //lets check if need to play sound
+        if (newTrainsArriving) {
+            new Audio('/bell.mp3').play();
+        }
+
+        //console.log("Processed trains is " + processedTrains + " " + new Date());
+        //lets remove any processed trains that are no longer on the board
+        var trainsProcessedAndNotOnBoard = getTrainsProcessedAndNotOnBoard(processedTrains, currentTrainsIDs);
+        //console.log("Trains to remove   " + trainsProcessedAndNotOnBoard);
+        processedTrains = _.difference(processedTrains, trainsProcessedAndNotOnBoard);
+        //console.log("Processed trains is " + processedTrains + " " + new Date());
+
     }
 });
 
+function getTrainsProcessedAndNotOnBoard(A, B) {
+    return _.filter(A, function (a) {
+        return !_.contains(B, a);
+    });
+}
+
 
 module.exports = List;
+
+
