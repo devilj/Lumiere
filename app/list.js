@@ -3,6 +3,8 @@
 var React = require('react'),
     DOM = React.DOM, td = DOM.td, tr = DOM.tr, th = DOM.th, thead = DOM.thead, table = DOM.table;
 
+var parse = require('../parse');
+
 var List = React.createClass({
     update: function () {
 
@@ -11,43 +13,180 @@ var List = React.createClass({
     getInitialState: function() {
         console.log('hi mom!');
 
-        return {data: [
-            { time: ' 4:19  ',
+        parse(function (data) {
+            this.setState({data:data})
+        });
+
+        return {data:
+            [ { time: ' 4:19  ',
+                to: 'Newark Penn',
+                track: '1',
+                line: 'Raritan Valley',
+                train: '5742',
+                status: 'in 2 Min',
+                minutesLeft: 2,
+                class: 'go-line' },
+                { time: ' 4:19  ',
                 to: 'Newark Penn',
                 track: '1',
                 line: 'Raritan Valley',
                 train: '5742',
                 status: 'in 21 Min',
                 minutesLeft: 21,
-                class: 'ready-line' }
+                class: 'ready-line' },
+                { time: ' 4:20  ',
+                    to: 'Raritan',
+                    track: '1',
+                    line: 'Raritan Valley',
+                    train: '5431',
+                    status: ' ',
+                    minutesLeft: null },
+                { time: ' 4:54  ',
+                    to: 'High Bridge',
+                    track: '1',
+                    line: 'Raritan Valley',
+                    train: '5733',
+                    status: ' ',
+                    minutesLeft: null },
+                { time: ' 4:57  ',
+                    to: 'Newark Penn',
+                    track: '2',
+                    line: 'Raritan Valley',
+                    train: '5444',
+                    status: ' ',
+                    minutesLeft: null },
+                { time: ' 5:26  ',
+                    to: 'Raritan',
+                    track: '1',
+                    line: 'Raritan Valley',
+                    train: '5435',
+                    status: ' ',
+                    minutesLeft: null },
+                { time: ' 5:54  ',
+                    to: 'Raritan',
+                    track: '1',
+                    line: 'Raritan Valley',
+                    train: '5439',
+                    status: ' ',
+                    minutesLeft: null },
+                { time: ' 6:10  ',
+                    to: 'Newark Penn',
+                    track: '1',
+                    line: 'Raritan Valley',
+                    train: '5746',
+                    status: ' ',
+                    minutesLeft: null },
+                { time: ' 6:14  ',
+                    to: 'Raritan',
+                    track: '1',
+                    line: 'Raritan Valley',
+                    train: '5441',
+                    status: ' ',
+                    minutesLeft: null },
+                { time: ' 6:37  ',
+                    to: 'Newark Penn',
+                    track: '2',
+                    line: 'Raritan Valley',
+                    train: '5448',
+                    status: ' ',
+                    minutesLeft: null },
+                { time: ' 6:42  ',
+                    to: 'Raritan',
+                    track: '1',
+                    line: 'Raritan Valley',
+                    train: '5445',
+                    status: ' ',
+                    minutesLeft: null },
+                { time: ' 7:09  ',
+                    to: 'Raritan',
+                    track: '1',
+                    line: 'Raritan Valley',
+                    train: '5447',
+                    status: ' ',
+                    minutesLeft: null },
+                { time: ' 7:25  ',
+                    to: 'NY Penn -SEC',
+                    track: '1',
+                    line: 'Raritan Valley',
+                    train: '5150',
+                    status: ' ',
+                    minutesLeft: null },
+                { time: ' 7:44  ',
+                    to: 'High Bridge',
+                    track: '1',
+                    line: 'Raritan Valley',
+                    train: '5749',
+                    status: ' ',
+                    minutesLeft: null },
+                { time: ' 8:21  ',
+                    to: 'Raritan',
+                    track: '1',
+                    line: 'Raritan Valley',
+                    train: '5451',
+                    status: ' ',
+                    minutesLeft: null },
+                { time: ' 8:38  ',
+                    to: 'NY Penn -SEC',
+                    track: '1',
+                    line: 'Raritan Valley',
+                    train: '5152',
+                    status: ' ',
+                    minutesLeft: null },
+                { time: ' 9:17  ',
+                    to: 'High Bridge',
+                    track: '1',
+                    line: 'Raritan Valley',
+                    train: '5193',
+                    status: ' ',
+                    minutesLeft: null },
+                { time: ' 9:35  ',
+                    to: 'NY Penn -SEC',
+                    track: '1',
+                    line: 'Raritan Valley',
+                    train: '5154',
+                    status: ' ',
+                    minutesLeft: null },
+                { time: ' 10:17  ',
+                    to: 'Raritan',
+                    track: '1',
+                    line: 'Raritan Valley',
+                    train: '5155',
+                    status: ' ',
+                    minutesLeft: null },
+                { time: ' 10:39  ',
+                    to: 'NY Penn -SEC',
+                    track: '1',
+                    line: 'Raritan Valley',
+                    train: '5156',
+                    status: ' ',
+                    minutesLeft: null } ]
 
-        ]};
+        };
     },
     render: function () {
         var items = this.state.data.map(function (item) {
             return tr( {className:item.class},
-                    td(item.time),
-                    td(item.to),
-                    td(item.track),
-                    td(item.line),
-                    td(item.train),
-                    td(item.status) )
+                    td(null, item.time),
+                    td(null, item.to),
+                    td(null, item.track),
+                    td(null, item.line),
+                    td(null, item.train),
+                    td(null, item.status) )
         });
 
         return table({className:'table schedule'},
                 thead(
-                    tr(
-                        th('Departs'),
-                        th('To'),
-                        th('Track'),
-                        th('Line'),
-                        th('Train'),
-                        th('Status')
-                    )
+                    td(null, 'Departs'),
+                    th(null, 'To'),
+                    th(null, 'Track'),
+                    th(null, 'Line'),
+                    th(null, 'Train'),
+                    th(null, 'Status')
                 ),
                 items
             );
     }
 });
+
 
 module.exports = List;

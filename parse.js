@@ -32,11 +32,13 @@ var post_data = JSON.stringify({
 
 var data='';
 
-//var intervalID = setInterval(myCallback, 30000);
+var intervalID = setInterval(myCallback, 30000);
 
+var callbacks = [];
 
+function myCallback() {
     // Set up the request
-    var post_req = http.request(post_options, function(res) {
+    var post_req = http.request(post_options, function (res) {
 
         //console.log('STATUS: ' + res.statusCode);
         //console.log('Response HEADERS: ' + JSON.stringify(res.headers));
@@ -50,84 +52,84 @@ var data='';
 
         res.on('end', function () {
             // console.log('BODY: ' + chunk);
-            var s1 = data.toString().replace(/\\r\\n/g,"");
-            var s2 = s1.replace(/\\u003c/g,"<");
-            var s3 = s2.replace(/\\u003e/g,">");
-            var s4 = s3.replace(/\\">/g,"\">");
-            var s5 = s4.replace(/\"}/g,"\"");
+            var s1 = data.toString().replace(/\\r\\n/g, "");
+            var s2 = s1.replace(/\\u003c/g, "<");
+            var s3 = s2.replace(/\\u003e/g, ">");
+            var s4 = s3.replace(/\\">/g, "\">");
+            var s5 = s4.replace(/\"}/g, "\"");
             //extract string that starts right after *SPLIT*
             response = s5.substr(s5.lastIndexOf("*SPLIT*") + 7, s4.length);
             //console.log(response);
 
-            parseHtmlResponse(response);
+            var result = parseHtmlResponse(response);
+
+            _.each(callbacks, function (callback) {
+                callback(result);
+            });
         });
     });
 
-    post_req.on('error', function(e) {
+    post_req.on('error', function (e) {
         console.log('problem with request: ' + e.message);
     });
-
 
     // post the data
     post_req.write(post_data);
     post_req.end();
 
 
+    function parseHtmlResponse(response) {
+        //console.log("called AAA")
+        var $ = cheerio.load(response);
 
+        var result = [];
+        var count = 0;
+        var train = {};
 
+        $('p').each(function () {
 
+            if (count == 6) {
+                count = 0;
+                train = {};
+            }
 
-function parseHtmlResponse(response) {
-    //console.log("called AAA")
-    var $ = cheerio.load(response);
+            switch (count) {
 
-    var result=[];
-    var count = 0;
-    var train={};
+                case 0:
+                    train.time = $(this).text();
+                    break;
+                case 1:
+                    train.to = $(this).text();
+                    break;
+                case 2:
+                    train.track = $(this).text();
+                    break;
+                case 3:
+                    train.line = $(this).text();
+                    break;
+                case 4:
+                    train.train = $(this).text();
+                    break;
+                case 5:
+                    train.status = $(this).text();
+                    train.minutesLeft = getMinutesLeftFromStatus($(this).text());
 
-    $('p').each(function() {
+                    if (train.minutesLeft && train.minutesLeft <= 5) {
+                        train.class = 'go-line';
 
-        if (count == 6) {
-            count = 0;
-            train={};
-        }
+                    } else if (train.minutesLeft && train.minutesLeft <= 20) {
+                        train.class = 'ready-line';
+                    }
+                    result.push(_.clone(train));
+            }
 
-        switch(count) {
+            count = count + 1;
+        });
 
-            case 0:
-                train.time=$(this).text();
-                break;
-            case 1:
-                train.to=$(this).text();
-                break;
-            case 2:
-                train.track=$(this).text();
-                break;
-            case 3:
-                train.line=$(this).text();
-                break;
-            case 4:
-                train.train=$(this).text();
-                break;
-            case 5:
-                train.status=$(this).text();
-                train.minutesLeft = getMinutesLeftFromStatus($(this).text());
+        console.log(result);
 
-                if (train.minutesLeft && train.minutesLeft <= 5 ) {
-                    train.class = 'go-line';
-
-                } else if(train.minutesLeft && train.minutesLeft <=20 ) {
-                    train.class = 'ready-line';
-                }
-                result.push(_.clone(train));
-        }
-
-        count = count + 1;
-    });
-
-    console.log(result);
-
-    return result;
+        return result;
+    }
 }
 
 function getMinutesLeftFromStatus(statusParam) {
@@ -138,6 +140,8 @@ function getMinutesLeftFromStatus(statusParam) {
     } else {
         return parseInt(status.substring(3,status.indexOf("min")).trim());
     }
-
-
 }
+
+module.exports = function (callback) {
+    callbacks.push(callback);
+};
