@@ -2,6 +2,7 @@
 var http = require('http');
 var cheerio = require("cheerio");
 var _ = require("lodash");
+var exports = module.exports = {};
 
 
 //
@@ -10,11 +11,15 @@ var post_options = {
     port: 80,
     path: '/webdisplay/WebDisplay.asmx/Display2',
     method: 'POST',
+    withCredentials: false,
     headers: {
         'Host': 'passcomm.njtransit.com',
         'Origin': 'http://passcomm.njtransit.com',
         'Referer': 'http://passcomm.njtransit.com/webdisplay/tid.aspx?SID=US',
-        'Content-Type': 'application/json; charset=UTF-8'
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Access-Control-Allow-Origin': 'passcomm.njtransit.com',
+        'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE',
+        'Access-Control-Allow-Headers': 'Content-Type'
     }
 };
 
@@ -32,11 +37,62 @@ var post_data = JSON.stringify({
 
 var data='';
 
-var intervalID = setInterval(myCallback, 30000);
+function parseHtmlResponse(response) {
+    var $ = cheerio.load(response);
 
-var callbacks = [];
+    var result = [];
+    var count = 0;
+    var train = {};
 
-function myCallback() {
+    $('p').each(function () {
+
+        if (count == 6) {
+            count = 0;
+            train = {};
+        }
+
+        switch (count) {
+
+            case 0:
+                train.time = $(this).text().trim();
+                break;
+            case 1:
+                train.to = $(this).text().trim();
+                break;
+            case 2:
+                train.track = $(this).text().trim();
+                break;
+            case 3:
+                train.line = $(this).text().trim();
+                break;
+            case 4:
+                train.train = $(this).text().trim();
+                break;
+            case 5:
+                train.status = $(this).text();
+                train.minutesLeft = getMinutesLeftFromStatus($(this).text());
+
+                if (train.minutesLeft && train.minutesLeft <= 5) {
+                    train.class = 'go-line';
+
+                } else if (train.minutesLeft && train.minutesLeft <= 20) {
+                    train.class = 'ready-line';
+                }
+                result.push(_.clone(train));
+        }
+
+        count = count + 1;
+    });
+
+    //console.log(result);
+
+    return result;
+}
+
+exports.getTrainData = function getTrainData(callback) {
+
+    var result = null;
+
     // Set up the request
     var post_req = http.request(post_options, function (res) {
 
@@ -51,7 +107,7 @@ function myCallback() {
 
 
         res.on('end', function () {
-            // console.log('BODY: ' + chunk);
+
             var s1 = data.toString().replace(/\\r\\n/g, "");
             var s2 = s1.replace(/\\u003c/g, "<");
             var s3 = s2.replace(/\\u003e/g, ">");
@@ -61,11 +117,11 @@ function myCallback() {
             response = s5.substr(s5.lastIndexOf("*SPLIT*") + 7, s4.length);
             //console.log(response);
 
-            var result = parseHtmlResponse(response);
+            result = parseHtmlResponse(response);
 
-            _.each(callbacks, function (callback) {
-                callback(result);
-            });
+
+            callback(result);
+
         });
     });
 
@@ -77,59 +133,8 @@ function myCallback() {
     post_req.write(post_data);
     post_req.end();
 
+    return 1;
 
-    function parseHtmlResponse(response) {
-        //console.log("called AAA")
-        var $ = cheerio.load(response);
-
-        var result = [];
-        var count = 0;
-        var train = {};
-
-        $('p').each(function () {
-
-            if (count == 6) {
-                count = 0;
-                train = {};
-            }
-
-            switch (count) {
-
-                case 0:
-                    train.time = $(this).text();
-                    break;
-                case 1:
-                    train.to = $(this).text();
-                    break;
-                case 2:
-                    train.track = $(this).text();
-                    break;
-                case 3:
-                    train.line = $(this).text();
-                    break;
-                case 4:
-                    train.train = $(this).text();
-                    break;
-                case 5:
-                    train.status = $(this).text();
-                    train.minutesLeft = getMinutesLeftFromStatus($(this).text());
-
-                    if (train.minutesLeft && train.minutesLeft <= 5) {
-                        train.class = 'go-line';
-
-                    } else if (train.minutesLeft && train.minutesLeft <= 20) {
-                        train.class = 'ready-line';
-                    }
-                    result.push(_.clone(train));
-            }
-
-            count = count + 1;
-        });
-
-        console.log(result);
-
-        return result;
-    }
 }
 
 function getMinutesLeftFromStatus(statusParam) {
@@ -142,6 +147,3 @@ function getMinutesLeftFromStatus(statusParam) {
     }
 }
 
-module.exports = function (callback) {
-    callbacks.push(callback);
-};
